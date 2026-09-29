@@ -246,7 +246,7 @@ export const scenarios: Scenario[] = [
         text: 'The RMM agent on a critical Windows server is permanently disconnected. The service refuses to start. You have RDP access. What is the cleanest way to reinstall?',
         options: [
           { id: 'opt-1-1', text: 'Download a new agent installer from the site and run it over the broken one.', isCorrect: false, feedback: 'Running the installer over a broken installation often leaves corrupt registry keys intact.', nextStepId: 'step-1' },
-          { id: 'opt-1-2', text: 'Use the standard Windows Add/Remove Programs or official silent uninstall command, then verify the directory is removed, then reinstall using a fresh site installer.', isCorrect: true, feedback: 'Correct. A clean scrub is required when the agent service is deeply corrupted.', nextStepId: 'step-2' }
+          { id: 'opt-1-2', text: 'Use the standard Windows Add/Remove Programs or official silent uninstall command, then verify the directory is removed, then reinstall using a fresh site installer.', isCorrect: true, feedback: 'Correct. Standard uninstallation is usually sufficient, but verify the directory is removed if the agent service was deeply corrupted.', nextStepId: 'step-2' }
         ]
       },
       'step-2': {
@@ -271,7 +271,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'You updated a Global monitoring policy to alert at 90% memory usage instead of 95%. However, Client A is still alerting at 95%, while Client B updated to 90%. Why?',
         options: [
-          { id: 'opt-1-1', text: 'Client A has a Site-level policy overriding the Global policy.', isCorrect: true, feedback: 'Correct. Check the assigned policy scopes and filters. A specific override mechanism exists for Patch Management, but for Monitoring, policies apply via scopes (Global/Site) and filters.', nextStepId: 'step-2' },
+          { id: 'opt-1-1', text: 'Client A has another policy targeting the device via a more specific filter.', isCorrect: true, feedback: 'Correct. Check the assigned policy scopes and filters. A specific override mechanism exists for Patch Management, but for Monitoring, policies apply via scopes (Global/Site) and filters.', nextStepId: 'step-2' },
           { id: 'opt-1-2', text: 'The Global policy hasn\'t finished syncing to Client A yet.', isCorrect: false, feedback: 'Policy syncs are generally immediate. It is much more likely a conflicting policy exists.', nextStepId: 'step-1' }
         ]
       },
@@ -280,7 +280,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'investigation',
         text: 'You check Client A\'s site policies but find NO memory monitoring policies. Why is it still overriding?',
         options: [
-          { id: 'opt-2-1', text: 'A specific policy was assigned directly targeting all servers at Client A.', isCorrect: true, feedback: 'Yes. If it\'s not at the Site level, individual Device-level overrides are the next place to look.' }
+          { id: 'opt-2-1', text: 'A specific policy was assigned directly targeting all servers at Client A.', isCorrect: true, feedback: 'Yes. If it\'s not at the Site level, individual Device-level filter assignments are the next place to look.' }
         ]
       }
     }

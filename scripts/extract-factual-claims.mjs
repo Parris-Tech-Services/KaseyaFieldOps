@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { allProducts } from '../src/data/products/index.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,14 +11,14 @@ function getHash(text) {
   return crypto.createHash('sha256').update(text || '').digest('hex');
 }
 
-export function extractClaims(modules, scenarios, cards) {
+export function extractClaims() {
   const pendingLedger = [];
   const seenIds = new Set();
   
   let duplicateCount = 0;
 
   function addClaim(id, text, module, file) {
-    if (!text || text.trim() === '') return;
+    if (!text || typeof text !== 'string' || text.trim() === '') return;
     
     // Validate uniqueness
     if (seenIds.has(id)) {
@@ -41,8 +42,10 @@ export function extractClaims(modules, scenarios, cards) {
     });
   }
 
-  // 1. Modules
-  for (const m of modules) {
+  for (const productExport of allProducts) {
+    const m = productExport.module;
+    if (!m) continue;
+    
     const file = `src/data/products/${m.id}.ts`;
     const prefix = `${m.id}/module`;
     
@@ -60,52 +63,56 @@ export function extractClaims(modules, scenarios, cards) {
     m.whenNotToUse?.forEach((t, i) => addClaim(`${prefix}/whenNotToUse/${i}`, t, m.id, file));
     m.commonConfusions?.forEach((t, i) => addClaim(`${prefix}/commonConfusions/${i}`, t, m.id, file));
     
-    m.ticketCases?.forEach((t, i) => {
-      addClaim(`${prefix}/ticketCases/${i}/title`, t.title, m.id, file);
-      addClaim(`${prefix}/ticketCases/${i}/client`, t.client, m.id, file);
-      addClaim(`${prefix}/ticketCases/${i}/symptom`, t.symptom, m.id, file);
-      addClaim(`${prefix}/ticketCases/${i}/investigation`, t.investigation, m.id, file);
-      addClaim(`${prefix}/ticketCases/${i}/resolution`, t.resolution, m.id, file);
-      addClaim(`${prefix}/ticketCases/${i}/lessonsLearned`, t.lessonsLearned, m.id, file);
-      addClaim(`${prefix}/ticketCases/${i}/fasterNextTime`, t.fasterNextTime, m.id, file);
+    // Some are on module, some are exported separately
+    const ticketCases = productExport.ticketCases || m.ticketCases || [];
+    ticketCases.forEach((t, i) => {
+      const tcId = t.id || `tc-${i}`;
+      addClaim(`${m.id}/ticketCases/${tcId}/title`, t.title, m.id, file);
+      addClaim(`${m.id}/ticketCases/${tcId}/client`, t.client, m.id, file);
+      addClaim(`${m.id}/ticketCases/${tcId}/symptom`, t.symptom, m.id, file);
+      addClaim(`${m.id}/ticketCases/${tcId}/investigation`, t.investigation, m.id, file);
+      addClaim(`${m.id}/ticketCases/${tcId}/resolution`, t.resolution, m.id, file);
+      addClaim(`${m.id}/ticketCases/${tcId}/lessonsLearned`, t.lessonsLearned, m.id, file);
+      addClaim(`${m.id}/ticketCases/${tcId}/fasterNextTime`, t.fasterNextTime, m.id, file);
     });
     
-    m.realTickets?.forEach((t, i) => {
-      addClaim(`${prefix}/realTickets/${i}/title`, t.title, m.id, file);
-      addClaim(`${prefix}/realTickets/${i}/issue`, t.issue, m.id, file);
-      addClaim(`${prefix}/realTickets/${i}/initialThought`, t.initialThought, m.id, file);
-      addClaim(`${prefix}/realTickets/${i}/resolution`, t.resolution, m.id, file);
-      addClaim(`${prefix}/realTickets/${i}/lessonsLearned`, t.lessonsLearned, m.id, file);
-      addClaim(`${prefix}/realTickets/${i}/fasterNextTime`, t.fasterNextTime, m.id, file);
+    const realTickets = productExport.realTickets || m.realTickets || [];
+    realTickets.forEach((t, i) => {
+      const rtId = t.id || `rt-${i}`;
+      addClaim(`${m.id}/realTickets/${rtId}/title`, t.title, m.id, file);
+      addClaim(`${m.id}/realTickets/${rtId}/issue`, t.issue, m.id, file);
+      addClaim(`${m.id}/realTickets/${rtId}/initialThought`, t.initialThought, m.id, file);
+      addClaim(`${m.id}/realTickets/${rtId}/resolution`, t.resolution, m.id, file);
+      addClaim(`${m.id}/realTickets/${rtId}/lessonsLearned`, t.lessonsLearned, m.id, file);
+      addClaim(`${m.id}/realTickets/${rtId}/fasterNextTime`, t.fasterNextTime, m.id, file);
     });
-  }
 
-  // 2. Scenarios
-  for (const sc of scenarios) {
-    const file = `src/data/products/${sc.moduleId}.ts`;
-    const prefix = `${sc.moduleId}/scenarios/${sc.id}`;
-    
-    addClaim(`${prefix}/title`, sc.title, sc.moduleId, file);
-    addClaim(`${prefix}/description`, sc.description, sc.moduleId, file);
-    
-    for (const stepKey in sc.steps) {
-      const step = sc.steps[stepKey];
-      addClaim(`${prefix}/steps/${step.id}/text`, step.text, sc.moduleId, file);
+    const scenarios = productExport.scenarios || [];
+    for (const sc of scenarios) {
+      const scPrefix = `${m.id}/scenarios/${sc.id}`;
       
-      step.options.forEach((opt, idx) => {
-        addClaim(`${prefix}/steps/${step.id}/options/opt-${idx}/text`, opt.text, sc.moduleId, file);
-        addClaim(`${prefix}/steps/${step.id}/options/opt-${idx}/feedback`, opt.feedback, sc.moduleId, file);
-      });
+      addClaim(`${scPrefix}/title`, sc.title, m.id, file);
+      addClaim(`${scPrefix}/description`, sc.description, m.id, file);
+      
+      for (const stepKey in sc.steps) {
+        const step = sc.steps[stepKey];
+        addClaim(`${scPrefix}/steps/${step.id}/text`, step.text, m.id, file);
+        
+        step.options.forEach((opt, idx) => {
+          // Use opt.id instead of just idx if available
+          const oId = opt.id || `opt-${idx}`;
+          addClaim(`${scPrefix}/steps/${step.id}/options/${oId}/text`, opt.text, m.id, file);
+          addClaim(`${scPrefix}/steps/${step.id}/options/${oId}/feedback`, opt.feedback, m.id, file);
+        });
+      }
     }
-  }
 
-  // 3. Flashcards
-  for (const fc of cards) {
-    const file = `src/data/products/${fc.moduleId}.ts`;
-    const prefix = `${fc.moduleId}/cards/${fc.id}`;
-    
-    addClaim(`${prefix}/question`, fc.question, fc.moduleId, file);
-    addClaim(`${prefix}/answer`, fc.answer, fc.moduleId, file);
+    const cards = productExport.cards || [];
+    for (const fc of cards) {
+      const fcPrefix = `${m.id}/cards/${fc.id}`;
+      addClaim(`${fcPrefix}/question`, fc.question, m.id, file);
+      addClaim(`${fcPrefix}/answer`, fc.answer, m.id, file);
+    }
   }
   
   if (duplicateCount > 0) {
@@ -115,8 +122,8 @@ export function extractClaims(modules, scenarios, cards) {
   return pendingLedger;
 }
 
-export function extractAndSave(modules, scenarios, cards) {
-  const pendingLedger = extractClaims(modules, scenarios, cards);
+export function extractAndSave() {
+  const pendingLedger = extractClaims();
   const ledgerPath = path.resolve(__dirname, '../docs/factual-claims.pending.json');
   fs.mkdirSync(path.dirname(ledgerPath), { recursive: true });
   fs.writeFileSync(ledgerPath, JSON.stringify(pendingLedger, null, 2));

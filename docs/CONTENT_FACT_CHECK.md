@@ -4,36 +4,31 @@ Branch: fix/current-main-factual-audit
 
 ## Audit State
 This audit abandons fully automated verdicts. 
-Factual claims are programmatically extracted via runtime graph traversal, assigned SHA-256 hashes, and verified manually. 
+Factual claims are programmatically extracted via runtime structured-content extraction, assigned SHA-256 hashes, and verified manually. 
+AUDIT STATUS: INCOMPLETE
 
 ## Exact Current Inventory
-* Total Extracted Factual Surfaces: 1147
-* Manually Reviewed: 126
-* VERIFIED (First-party source matched): 11
+* Total Extracted Factual Surfaces: 1195
+* Manually Reviewed: 93
+* VERIFIED (First-party source matched): 3
 * QUALIFIED: 0
 * INCORRECT (Found and corrected): 0
 * UNSUPPORTED (Found and removed/rewritten): 0
 * OUTDATED: 0
-* MSP_PRACTICE / REASONED_RECOMMENDATION: 115
-* UNREVIEWED: 1021
+* MSP_PRACTICE / REASONED_RECOMMENDATION: 90
+* UNREVIEWED: 1101
 * UNRESOLVED: 0
+* NEEDS_REVALIDATION: 1
+* SOURCE_NOT_NETWORK_VALIDATED: 0
 
 ## Integrity Checks
 * Duplicate claim IDs: 0
 * VERIFIED entries lacking evidence: 0
+* Bad/broken evidence URLs: 0
 * Stale hash mismatches: 0
 * Wrong-product source mappings: 0
-* Coverage percentage: 100% of defined fields in AST extraction.
-
-## Errors found during the full audit
-* Datto RMM Isolation: EDR isolation blocks network traffic but preserves RMM communication. Corrected.
-* Datto RMM Monitoring Conflict: Generic Patch Override rules misapplied to Monitoring. Corrected.
-* Datto SaaS Protection Restore: Restore directly to "SaaS Protection Restore YYYY-MM-DD HH:MM:SS" rather than overwriting. Corrected.
-* Datto Backup Terminology: Snapshots are independent and non-bootable until virtualization. Corrected.
-* INKY Banner Customization: Threat classification determines primary color. Corrected.
-* BullPhish ID: Replaced requirements for Custom Domains with Global Sending Domains option. Corrected.
+* Malformed-reviewed claims: 0
+* Coverage percentage: Complete coverage of exported products, scenarios, cards, and ticket cases.
 
 ## Claims I still cannot establish from vendor documentation
-* I still cannot establish the exact truth of 1021 unreviewed claims because they have not been manually checked against vendor docs.
-* We cannot establish that an "Agent Uninstall Tool" explicitly requires registry scrubbing for Datto RMM, as the standard uninstaller is documented.
-
+* 1101 unreviewed claims remain pending.

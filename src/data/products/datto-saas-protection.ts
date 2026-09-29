@@ -117,7 +117,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'When you choose to restore directly, where does the data go by default?',
         options: [
-          { id: 'opt-3-1', text: 'It restores to a new folder named "SaaS Protection Restore - [Date/Time]" in the user\'s mailbox.', isCorrect: true, feedback: 'Correct. It does not overwrite existing data; it places the restored items in a clearly marked folder.' }
+          { id: 'opt-3-1', text: 'It restores to a new folder named "SaaS Protection Restore YYYY-MM-DD HH:MM:SS" in the user\'s mailbox.', isCorrect: true, feedback: 'Correct. It does not overwrite existing data; it places the restored items in a clearly marked folder.' }
         ]
       }
     }

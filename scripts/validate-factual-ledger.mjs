@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export function validateLedger() {
+export async function validateLedger() {
   const pendingPath = path.resolve(__dirname, '../docs/factual-claims.pending.json');
   const reviewedPath = path.resolve(__dirname, '../docs/factual-claims.reviewed.json');
   const reportPath = path.resolve(__dirname, '../docs/CONTENT_FACT_CHECK.md');
@@ -20,7 +20,6 @@ export function validateLedger() {
   if (fs.existsSync(reviewedPath)) {
     reviewedLedger = JSON.parse(fs.readFileSync(reviewedPath, 'utf8'));
   } else {
-    // If no reviewed ledger, clone pending
     reviewedLedger = JSON.parse(JSON.stringify(pendingLedger));
   }
 
@@ -31,6 +30,8 @@ export function validateLedger() {
   let missingSources = 0;
   let wrongProducts = 0;
   let duplicateIds = 0;
+  let brokenUrls = 0;
+  let malformedWording = 0;
   
   // Verify IDs unique
   const allReviewedIds = new Set();
@@ -41,72 +42,83 @@ export function validateLedger() {
 
   for (const r of reviewedLedger) {
     const p = pendingMap.get(r.claimId);
-    if (!p) {
-      // It exists in reviewed but not in pending -> stale/deleted claim.
-      continue;
-    }
+    if (!p) continue;
 
-    if (p.hash !== r.hash && r.verdict !== 'UNREVIEWED') {
+    if (p.hash !== r.hash && (r.verdict === 'VERIFIED' || r.verdict === 'MSP_PRACTICE' || r.verdict === 'STALE')) {
+      r.reviewedText = r.claimText;
+      r.reviewedHash = r.hash;
       r.verdict = 'STALE';
       staleHashes++;
     }
     
-    // Update hash in reviewed ledger
-    r.hash = p.hash;
+    r.currentText = p.claimText;
+    r.currentHash = p.hash;
     r.claimText = p.claimText;
-    
+    r.hash = p.hash;
+
     if (r.verdict === 'VERIFIED') {
+      const malformedPatterns = [/or "Journal Mode"/i, /Snapshot snapshot/i, /the the/i, /or or/i, /and and/i, /\[Date\/Time\]/i, /TODO/i, /TBD/i, /placeholder/i, /N\/A/i];
+      for (const pattern of malformedPatterns) {
+        if (pattern.test(r.claimText)) {
+          r.verdict = 'NEEDS_REVALIDATION';
+          malformedWording++;
+          break;
+        }
+      }
+
       if (!r.sourceUrl || r.sourceUrl === 'N/A' || !r.sourceUrl.startsWith('http')) {
         missingSources++;
-      }
-      
-      // Basic domain check to prevent wrong-product sourcing (simplified check)
-      const domain = new URL(r.sourceUrl).hostname.toLowerCase();
-      const moduleStr = r.claimId.split('/')[0];
-      
-      if (moduleStr.includes('datto-rmm') && !domain.includes('rmm.datto') && !domain.includes('kaseya')) {
-         wrongProducts++;
-      } else if (moduleStr.includes('inky') && !domain.includes('inky.com') && !domain.includes('kaseya')) {
-         wrongProducts++;
-      } else if (moduleStr.includes('datto-backup') && !domain.includes('continuity.datto') && !domain.includes('kaseya')) {
-         wrongProducts++;
-      } else if (moduleStr.includes('saas-protection') && !domain.includes('saasprotection.datto') && !domain.includes('kaseya')) {
-         wrongProducts++;
-      } else if (moduleStr.includes('bullphish') && !domain.includes('bullphishid') && !domain.includes('kaseya')) {
-         wrongProducts++;
+      } else {
+        const domain = new URL(r.sourceUrl).hostname.toLowerCase();
+        const moduleStr = r.claimId.split('/')[0];
+        
+        if (moduleStr.includes('datto-rmm') && !domain.includes('rmm.datto') && !domain.includes('kaseya')) {
+           wrongProducts++;
+        } else if (moduleStr.includes('inky') && !domain.includes('inky.com') && !domain.includes('kaseya')) {
+           wrongProducts++;
+        } else if (moduleStr.includes('datto-backup') && !domain.includes('continuity.datto') && !domain.includes('kaseya')) {
+           wrongProducts++;
+        } else if (moduleStr.includes('saas-protection') && !domain.includes('saasprotection.datto') && !domain.includes('kaseya')) {
+           wrongProducts++;
+        } else if (moduleStr.includes('bullphish') && !domain.includes('bullphishid') && !domain.includes('kaseya')) {
+           wrongProducts++;
+        }
+
+        // Network validation
+        try {
+          const res = await fetch(r.sourceUrl, { redirect: 'follow' });
+          r.sourceHttpStatus = res.status;
+          r.sourceFinalUrl = res.url;
+          r.sourceValidatedAt = new Date().toISOString();
+          if (!res.ok) {
+            brokenUrls++;
+            r.verdict = 'NEEDS_REVALIDATION';
+          }
+        } catch (e) {
+          r.sourceHttpStatus = 0;
+          r.verdict = 'SOURCE_NOT_NETWORK_VALIDATED';
+        }
       }
     }
   }
 
-  // Add any new claims from pending that aren't in reviewed
   for (const p of pendingLedger) {
     if (!reviewedMap.has(p.claimId)) {
       reviewedLedger.push(p);
     }
   }
 
-  // Count stats
-  let verified = 0;
-  let msp = 0;
-  let unreviewed = 0;
-  let incorrect = 0;
-  let unsupported = 0;
-  let outdated = 0;
-  let qualified = 0;
-  let unresolved = 0;
-  let stale = 0;
+  let verified = 0, msp = 0, unreviewed = 0, incorrect = 0, unsupported = 0, outdated = 0, qualified = 0, unresolved = 0, stale = 0, needsReval = 0, notValidated = 0;
 
   for (const l of reviewedLedger) {
-    // Only count active (non-deleted) claims against the pending set size.
-    // If it's not in pendingMap, it was deleted in source.
     if (!pendingMap.has(l.claimId)) {
-      if (l.originalVerdict === 'INCORRECT' && l.resolution === 'CORRECTED') incorrect++;
-      if (l.originalVerdict === 'UNSUPPORTED' && l.resolution === 'REMOVED') unsupported++;
+      if (l.originalVerdict === 'INCORRECT') incorrect++;
+      if (l.originalVerdict === 'UNSUPPORTED') unsupported++;
       continue;
     }
     
-    // Also check active claims for resolutions
-    if (l.originalVerdict === 'INCORRECT' && l.resolution === 'CORRECTED') incorrect++;
+    if (l.originalVerdict === 'INCORRECT') incorrect++;
+    if (l.originalVerdict === 'UNSUPPORTED') unsupported++;
     
     if (l.verdict === 'VERIFIED') verified++;
     else if (l.verdict === 'MSP_PRACTICE') msp++;
@@ -114,6 +126,8 @@ export function validateLedger() {
     else if (l.verdict === 'UNRESOLVED') unresolved++;
     else if (l.verdict === 'OUTDATED') outdated++;
     else if (l.verdict === 'STALE') stale++;
+    else if (l.verdict === 'NEEDS_REVALIDATION') needsReval++;
+    else if (l.verdict === 'SOURCE_NOT_NETWORK_VALIDATED') notValidated++;
     else unreviewed++;
   }
 
@@ -125,7 +139,8 @@ Branch: fix/current-main-factual-audit
 
 ## Audit State
 This audit abandons fully automated verdicts. 
-Factual claims are programmatically extracted via runtime graph traversal, assigned SHA-256 hashes, and verified manually. 
+Factual claims are programmatically extracted via runtime structured-content extraction, assigned SHA-256 hashes, and verified manually. 
+AUDIT STATUS: INCOMPLETE
 
 ## Exact Current Inventory
 * Total Extracted Factual Surfaces: ${pendingLedger.length}
@@ -138,29 +153,28 @@ Factual claims are programmatically extracted via runtime graph traversal, assig
 * MSP_PRACTICE / REASONED_RECOMMENDATION: ${msp}
 * UNREVIEWED: ${unreviewed}
 * UNRESOLVED: ${unresolved}
+* NEEDS_REVALIDATION: ${needsReval}
+* SOURCE_NOT_NETWORK_VALIDATED: ${notValidated}
 
 ## Integrity Checks
 * Duplicate claim IDs: ${duplicateIds}
 * VERIFIED entries lacking evidence: ${missingSources}
+* Bad/broken evidence URLs: ${brokenUrls}
 * Stale hash mismatches: ${stale}
 * Wrong-product source mappings: ${wrongProducts}
-* Coverage percentage: 100% of defined fields in AST extraction.
-
-## Errors found during the full audit
-* Datto RMM Isolation: EDR isolation blocks network traffic but preserves RMM communication. Corrected.
-* Datto RMM Monitoring Conflict: Generic Patch Override rules misapplied to Monitoring. Corrected.
-* Datto SaaS Protection Restore: Restore directly to "SaaS Protection Restore YYYY-MM-DD HH:MM:SS" rather than overwriting. Corrected.
-* Datto Backup Terminology: Snapshots are independent and non-bootable until virtualization. Corrected.
-* INKY Banner Customization: Threat classification determines primary color. Corrected.
-* BullPhish ID: Replaced requirements for Custom Domains with Global Sending Domains option. Corrected.
+* Malformed-reviewed claims: ${malformedWording}
+* Coverage percentage: Complete coverage of exported products, scenarios, cards, and ticket cases.
 
 ## Claims I still cannot establish from vendor documentation
-* I still cannot establish the exact truth of ${unreviewed} unreviewed claims because they have not been manually checked against vendor docs.
-* We cannot establish that an "Agent Uninstall Tool" explicitly requires registry scrubbing for Datto RMM, as the standard uninstaller is documented.
-
+* ${unreviewed} unreviewed claims remain pending.
 `;
 
   fs.writeFileSync(reportPath, md);
+
+  const errors = duplicateIds + stale + missingSources + wrongProducts + malformedWording + brokenUrls + notValidated;
+  if (errors > 0 || needsReval > 0) {
+    throw new Error(`Validation failed. ${duplicateIds} duplicates, ${stale} stale, ${missingSources} missing sources, ${brokenUrls} broken URLs, ${wrongProducts} wrong product, ${malformedWording} malformed wording.`);
+  }
 
   return {
     unreviewed,
@@ -168,6 +182,9 @@ Factual claims are programmatically extracted via runtime graph traversal, assig
     staleHashes: stale,
     missingSources,
     wrongProducts,
+    brokenUrls,
+    malformedWording,
+    notValidated,
     totalSurfaces: pendingLedger.length
   };
 }

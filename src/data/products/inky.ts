@@ -149,7 +149,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'They agree to keep the banners. They want to change the yellow "External Sender" banner to a tiny gray footer. Can you do this?',
         options: [
-          { id: 'opt-2-1', text: 'Yes, INKY allows customizing some banner elements, but threat classification determines the primary color (Red/Yellow/Gray).', isCorrect: true, feedback: 'Yes. INKY is highly customizable to fit corporate communication styles.', nextStepId: 'step-3' }
+          { id: 'opt-2-1', text: 'Administrators can customize branding, logos, detail levels, and supplemental text, but they cannot arbitrarily change the security classification (Red/Yellow/Gray) of a warning to make it less visually alarming.', isCorrect: true, feedback: 'Yes. INKY is highly customizable to fit corporate communication styles.', nextStepId: 'step-3' }
         ]
       },
       'step-3': {
