@@ -54,7 +54,7 @@ export function ScenarioDrill() {
           itemId: currentStepId,
           itemType: 'scenario_decision',
           moduleId: scenario.moduleId,
-          rating: (confidence === 'confident') ? 'easy' : confidence === 'guessing' ? 'hard' : 'good',
+          rating: confidence === 'highly_confident' ? 'easy' : confidence === 'guessing' ? 'hard' : 'good',
           confidence
         });
       } else {

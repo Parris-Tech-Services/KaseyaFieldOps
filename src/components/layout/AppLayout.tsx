@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Layers, PlayCircle, Book, Map, Activity, XOctagon, BrainCircuit, Search, Settings } from 'lucide-react';
+import { Home, Layers, PlayCircle, Book, Map, Activity, XOctagon, BrainCircuit, Search, Settings, ClipboardCheck } from 'lucide-react';
 import { CommandPalette } from '../../features/search/CommandPalette';
 import { OnboardingModal } from '../../features/onboarding/OnboardingModal';
 
@@ -12,6 +12,7 @@ export function AppLayout() {
     { name: 'Product Map', path: '/map', icon: Map },
     { name: 'Quick Reference', path: '/reference', icon: Book },
     { name: 'Shift Simulator', path: '/shift', icon: PlayCircle },
+    { name: 'Field Test', path: '/simulator', icon: ClipboardCheck },
     { name: 'Reviews', path: '/review', icon: BrainCircuit },
     { name: 'Mistakes', path: '/mistakes', icon: XOctagon },
     { name: 'Progress', path: '/progress', icon: Activity },
@@ -74,9 +75,9 @@ export function AppLayout() {
         </div>
       </main>
 
-      {/* Bottom Nav for Mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border flex justify-around items-center h-16 z-50">
-        {navItems.slice(0, 5).map((item) => {
+      {/* Bottom Nav for Mobile: horizontally scrollable so every native route remains reachable. */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border flex items-center h-16 z-50 overflow-x-auto overscroll-x-contain">
+        {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
           return (
@@ -84,12 +85,12 @@ export function AppLayout() {
               key={item.name}
               to={item.path}
               aria-current={isActive ? 'page' : undefined}
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+              className={`flex flex-col items-center justify-center h-full space-y-1 min-w-[76px] px-2 ${
                 isActive ? 'text-primary' : 'text-textMuted'
               }`}
             >
               <Icon size={20} />
-              <span className="text-[10px] font-medium">{item.name}</span>
+              <span className="text-[10px] font-medium whitespace-nowrap">{item.name}</span>
             </Link>
           );
         })}
