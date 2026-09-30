@@ -10,7 +10,7 @@ export const module: AppModule = {
   problemSolved: 'Microsoft and Google do not back up your cloud data natively. They ensure uptime, but if a user deletes a file or gets ransomware, the data is gone. SaaS Protection provides an independent backup of that data.',
   mentalModel: 'It is a safety net for cloud emails and files. It connects directly to Microsoft/Google APIs and copies the data to Datto\'s cloud three times a day.',
   keyTerminology: [
-    { term: 'Point-in-Time Restore', definition: 'Rolling back a mailbox or OneDrive to exactly how it looked at a specific time in the past.' },
+    
     { term: 'Timestamped Restore Folder', definition: 'A designated folder created during a restore that prevents existing current data from being overwritten.' },
     { term: 'ICR (Infinite Cloud Retention)', definition: 'Keeping backups forever as long as the subscription is active, even if the user is deleted.' }
   ],
@@ -100,7 +100,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'procedure',
         text: 'A user calls in a panic because they Shift+Deleted their "Contracts 2025" folder in Outlook. You go to Datto SaaS Protection. How do you find the data?',
         options: [
-          { id: 'opt-1-1', text: 'Navigate to the user\'s Exchange backup, select a snapshot from before the deletion, and browse/search for the folder.', isCorrect: true, feedback: 'Correct. You must select a point-in-time snapshot before the data was deleted to restore it.', nextStepId: 'step-2' }
+          { id: 'opt-1-1', text: 'Navigate to the user\'s Exchange backup, select a snapshot from before the deletion, and browse/search for the folder.', isCorrect: true, feedback: 'Correct. You must select a Snapshot before the data was deleted to restore it.', nextStepId: 'step-2' }
         ]
       },
       'step-2': {
@@ -117,7 +117,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'When you choose to restore directly, where does the data go by default?',
         options: [
-          { id: 'opt-3-1', text: 'It restores to a new folder named "Datto Restore - [Date/Time]" in the user\'s mailbox.', isCorrect: true, feedback: 'Correct. It does not overwrite existing data; it places the restored items in a clearly marked folder.' }
+          { id: 'opt-3-1', text: 'It restores to a new folder named "SaaS Protection Restore YYYY-MM-DD HH:MM:SS" in the user\'s mailbox.', isCorrect: true, feedback: 'Correct. It does not overwrite existing data; it places the restored items in a clearly marked folder.' }
         ]
       }
     }
@@ -200,7 +200,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'A user clicked a bad link and their entire OneDrive is filled with .locked files. You need to restore it. What is the best approach?',
         options: [
-          { id: 'opt-1-1', text: 'Use the Point-in-Time restore feature in Datto SaaS Protection for their OneDrive.', isCorrect: true, feedback: 'Correct. This is exactly what Point-in-Time restore is for—rolling back mass changes.', nextStepId: 'step-2' }
+          { id: 'opt-1-1', text: 'Use the Snapshot restore feature in Datto SaaS Protection for their OneDrive.', isCorrect: true, feedback: 'Correct. This is exactly what Snapshot restore is for—recovering from ransomware encrypting data.', nextStepId: 'step-2' }
         ]
       },
       'step-2': {
@@ -208,7 +208,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'You have identified a clean snapshot from before the ransomware event. Where should you restore the data to?',
         options: [
-          { id: 'opt-2-1', text: 'Choose a timestamped restore folder or an alternate location to avoid overwriting any unencrypted current data while verifying the restore.', isCorrect: true, feedback: 'Correct. Overwriting removes the bad files, but you must ensure you have the right point in time.', nextStepId: 'step-3' }
+          { id: 'opt-2-1', text: 'Choose a timestamped restore folder or an alternate location to avoid overwriting any unencrypted current data while verifying the restore.', isCorrect: true, feedback: 'Correct. Timestamped folders prevent overwriting any current legitimate files that may have synced.', nextStepId: 'step-3' }
         ]
       },
       'step-3': {
@@ -262,17 +262,17 @@ export const cards: Flashcard[] = [
   { id: 'fc-saas-3', moduleId: 'datto-saas-protection', question: 'Does pausing a user\'s backup delete their historical data?', answer: 'No, pausing (or unprotecting) stops new backups and frees a license seat, but historical data remains per the retention policy.' },
   { id: 'fc-saas-4', moduleId: 'datto-saas-protection', question: 'What format are OneDrive/Google Drive files exported in?', answer: 'A standard ZIP file containing the original file formats.' },
   { id: 'fc-saas-5', moduleId: 'datto-saas-protection', question: 'What does a "Partial" backup status mean?', answer: 'The backup ran, but some items failed to back up (e.g., due to API throttling from Microsoft/Google or a corrupt item).' },
-  { id: 'fc-saas-6', moduleId: 'datto-saas-protection', question: 'Where do direct restores of emails go by default in M365?', answer: 'To a newly created folder named "Datto Restore" with the date and time, to prevent overwriting existing data.' },
+  { id: 'fc-saas-6', moduleId: 'datto-saas-protection', question: 'Where do direct restores of emails go by default in M365?', answer: 'To a newly created folder named "SaaS Protection Restore" with the date and time, to prevent overwriting current data.' },
   { id: 'fc-saas-7', moduleId: 'datto-saas-protection', question: 'Can Datto SaaS Protection back up Microsoft Teams chats?', answer: 'Yes, it backs up Teams channels, files, and conversations, though API limitations sometimes affect private 1:1 chats depending on configuration.' },
   { id: 'fc-saas-8', moduleId: 'datto-saas-protection', question: 'What happens if you turn on "Auto-Add New Users"?', answer: 'SaaS Protection will automatically detect new users with valid licenses in the tenant and begin backing them up without manual intervention.' },
   { id: 'fc-saas-9', moduleId: 'datto-saas-protection', question: 'Is Datto SaaS Protection subject to Microsoft/Google API throttling?', answer: 'Yes. If a tenant is heavily utilized, Microsoft/Google may throttle the API, causing backups to take longer or fail temporarily.' },
   { id: 'fc-saas-10', moduleId: 'datto-saas-protection', question: 'How do you restore a deleted SharePoint document library?', answer: 'Go to the SharePoint section, select the site, pick a snapshot prior to deletion, and select the library to restore.' },
   { id: 'fc-saas-11', moduleId: 'datto-saas-protection', question: 'Can you restore a Google Workspace email to a different user\'s account?', answer: 'Yes, cross-user restores are supported in both Google Workspace and M365.' },
-  { id: 'fc-saas-12', moduleId: 'datto-saas-protection', question: 'What is a best practice when restoring a large amount of ransomware-affected data?', answer: 'Restore to a timestamped folder or alternate location to avoid overwriting existing data until you can verify it.' },
+  { id: 'fc-saas-12', moduleId: 'datto-saas-protection', question: 'What is a best practice when restoring a large amount of ransomware-affected data?', answer: 'Restore to a timestamped folder or alternate location to avoid overwriting current data until you can verify it.' },
   { id: 'fc-saas-13', moduleId: 'datto-saas-protection', question: 'If a user is hard-deleted in M365, what happens to their SaaS Protection backup?', answer: 'The backups are retained indefinitely (if on ICR) even if the user is deleted in M365.' },
   { id: 'fc-saas-14', moduleId: 'datto-saas-protection', question: 'What permission level is required to authorize SaaS Protection for an M365 tenant?', answer: 'Global Administrator.' },
   { id: 'fc-saas-15', moduleId: 'datto-saas-protection', question: 'How are exports downloaded?', answer: 'Via the web browser from the Exports tab once the background generation is complete.' },
-  { id: 'fc-saas-16', moduleId: 'datto-saas-protection', question: 'What is Point-in-Time Restore?', answer: 'A feature that allows you to roll back an entire mailbox or drive to its exact state at a specific past backup, useful for ransomware.' },
+  { id: 'fc-saas-16', moduleId: 'datto-saas-protection', question: 'What is Snapshot Restore?', answer: 'A feature that restores snapshot data to a designated timestamped folder to recover from ransomware without overwriting current data.' },
   { id: 'fc-saas-17', moduleId: 'datto-saas-protection', question: 'Can you search for specific emails inside a backup without restoring?', answer: 'Yes, you can use the search bar to find emails by subject, sender, or date within a snapshot.' }
 ];
 
@@ -284,7 +284,7 @@ export const ticketCases: RealTicketCase[] = [
     symptoms: 'Client submitted a ticket stating a terminated employee\'s mailbox is missing from their M365 environment and needs to retrieve a contract from 3 years ago.',
     initialThought: 'The client probably hard-deleted the user in M365 without converting to a shared mailbox first.',
     investigation: 'Checked Datto SaaS Protection dashboard for the tenant. Found the user under the "Unprotected" or archived list. The Infinite Cloud Retention (ICR) policy means the data was still there even though the user was purged from Microsoft.',
-    resolution: 'Used Point-in-Time Restore in Datto SaaS to perform an export of the user\'s entire mailbox to a PST file. Provided the PST securely to the client\'s HR department.',
+    resolution: 'Used Snapshot Restore in Datto SaaS to perform an export of the user\'s entire mailbox to a PST file. Provided the PST securely to the client\'s HR department.',
     lessonsLearned: 'Always verify if ICR is enabled for a tenant. Datto SaaS protects against administrative mistakes like deleting a user without archiving them natively.',
     fasterNextTime: 'Instead of searching M365 audit logs for the deletion event first, immediately check the SaaS Protection archives to see if the data is safely retained.'
   },
@@ -306,9 +306,9 @@ export const ticketCases: RealTicketCase[] = [
     symptoms: 'User reports all files in their OneDrive are appended with .locked and they cannot open anything.',
     initialThought: 'Classic ransomware infection encrypting synced local files and propagating the changes to the cloud OneDrive.',
     investigation: 'Immediately disabled the user\'s sign-in and revoked M365 sessions to stop the spread. Verified the endpoint was infected. Checked SaaS Protection and found the latest backup from 2 hours ago contained the unencrypted files.',
-    resolution: 'Contained the infected endpoint. Used the Point-in-Time Restore feature in SaaS Protection to perform a restore of the user\'s OneDrive to a timestamped folder, rolling it back to the snapshot from before the infection.',
+    resolution: 'Contained the infected endpoint. Used the Snapshot Restore feature in SaaS Protection to perform a restore of the user\'s OneDrive to a timestamped folder, rolling it back to the snapshot from before the infection.',
     lessonsLearned: 'Snapshot restores to designated folders prevent accidental data loss of unaffected files while recovering from ransomware.',
-    fasterNextTime: 'Don\'t waste time trying to clean the infected endpoint; isolate it immediately, verify the backup health, and proceed with a full point-in-time restore.'
+    fasterNextTime: 'Don\'t waste time trying to clean the infected endpoint; isolate it immediately, verify the backup health, and proceed with a full Snapshot restore.'
   }
 ];
 

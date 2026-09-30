@@ -31,7 +31,7 @@ export const module: AppModule = {
   relatedProducts: ['Datto RMM', 'Datto Backup'],
   commonConfusions: [
     'Confused with Datto Backup (BCDR): DFP cannot restore an operating system or perform virtualization. It only restores files.',
-    'Confused with OneDrive: While OneDrive syncs files, DFP is a true backup solution with immutable version history (up to 180 days) managed entirely by the MSP.',
+    'Confused with OneDrive: While OneDrive syncs files, DFP is a true backup solution with version history (up to 180 days) managed entirely by the MSP.',
   ],
   sources: [
     {

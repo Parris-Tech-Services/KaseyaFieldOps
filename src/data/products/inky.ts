@@ -12,7 +12,7 @@ export const module: AppModule = {
   keyTerminology: [
     { term: 'Phish Fence', definition: 'The core engine that analyzes emails using machine learning and computer vision.' },
     { term: 'Banner', definition: 'The visual warning (Red, Yellow, Gray) injected at the top of the email body.' },
-    { term: 'Passive Mode', definition: 'Monitoring mode where INKY scores emails but does not show banners or quarantine anything.' }
+    { term: 'Journal Mode', definition: 'Monitoring mode where INKY scores emails but does not show banners or quarantine anything.' }
   ],
   actualUseCases: [
     'Stopping a fake "Urgent Invoice" email from reaching the CFO',
@@ -22,7 +22,7 @@ export const module: AppModule = {
   commonWorkflows: [
     'Investigating a user-reported email via the INKY dashboard',
     'Reclassifying a false positive (legitimate email marked as spam)',
-    'Deploying INKY in Passive Mode for a new client'
+    'Deploying INKY in Journal Mode for a new client'
   ],
   whenNotToUse: [
     'Do not use this to restore an email that was deleted a month ago (use SaaS Protection).',
@@ -38,7 +38,7 @@ export const module: AppModule = {
       title: "INKY Email Security Overview",
       url: "https://www.kaseya.com/products/inky-email-security/",
       verifiedAt: "2026-08-20T00:00:00Z",
-      supports: ["GenAI/Computer Vision detection", "Dynamic warning banners", "Replaces Graphus"]
+      supports: ["GenAI/Computer Vision detection", "Dynamic warning banners", "operates before the inbox"]
     }
   ]
 };
@@ -86,7 +86,7 @@ export const scenarios: Scenario[] = [
           },
           {
             id: 'opt-2-2',
-            text: 'Classify the message as Malicious/Phishing in INKY, which moves it to quarantine, and notify the CFO to disregard.',
+            text: 'Classify the message as Malicious/Phishing in INKY, which directs it to quarantine, and notify the CFO to disregard.',
             isCorrect: true,
             feedback: 'Exactly. Protect the user, classify correctly to train the model, and communicate clearly.',
           }
@@ -106,8 +106,8 @@ export const scenarios: Scenario[] = [
         competencyArea: 'procedure',
         text: 'You are migrating a Microsoft 365 tenant from Graphus to INKY. What is the correct sequence regarding their active protection?',
         options: [
-          { id: 'opt-1-1', text: 'Import Graphus settings (allow/block/VIPs) into INKY, deploy INKY alongside Graphus temporarily, then disable Graphus protection via its API integration.', isCorrect: true, feedback: 'Correct. Graphus operates via API, not mail flow rules. You deploy INKY, ensure it is routing correctly, then disable Graphus.', nextStepId: 'step-2' },
-          { id: 'opt-1-2', text: 'Remove Graphus mail flow rules and Exchange connectors first.', isCorrect: false, feedback: 'Incorrect. Graphus uses Microsoft 365 API integration, not MX or mail flow connectors. INKY uses the connectors.', nextStepId: 'step-1' }
+          { id: 'opt-1-1', text: 'Import Graphus settings (allow/block/VIPs) into INKY, deploy INKY alongside Graphus temporarily, then disable Graphus protection via its API integration.', isCorrect: true, feedback: 'Correct. Graphus scanned mail after delivery, while INKY operates before the inbox via connectors. You deploy INKY, ensure it is routing correctly, then disable Graphus.', nextStepId: 'step-2' },
+          { id: 'opt-1-2', text: 'Remove Graphus mail flow rules and Exchange connectors first.', isCorrect: false, feedback: 'Incorrect. Graphus scanned mail post-delivery via API. INKY operates before the inbox using mail flow connectors.', nextStepId: 'step-1' }
         ]
       },
       'step-2': {
@@ -149,7 +149,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'They agree to keep the banners. They want to change the yellow "External Sender" banner to a tiny gray footer. Can you do this?',
         options: [
-          { id: 'opt-2-1', text: 'Yes, INKY allows customizing banner styles, colors, and placement (top or bottom).', isCorrect: true, feedback: 'Yes. INKY is highly customizable to fit corporate communication styles.', nextStepId: 'step-3' }
+          { id: 'opt-2-1', text: 'Administrators can customize branding, logos, detail levels, and supplemental text, but they cannot arbitrarily change the security classification (Red/Yellow/Gray) of a warning to make it less visually alarming.', isCorrect: true, feedback: 'Yes. INKY is highly customizable to fit corporate communication styles.', nextStepId: 'step-3' }
         ]
       },
       'step-3': {
@@ -174,7 +174,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'procedure',
         text: 'You are deploying INKY, but the client wants a 2-week "silent mode" to monitor false positives without showing banners to users. How do you accomplish this?',
         options: [
-          { id: 'opt-1-1', text: 'Configure the INKY policies to run in "Passive Mode" or "Monitor Only," which scores emails but does not inject banners or quarantine them.', isCorrect: true, feedback: 'Correct. This is the standard way to baseline an environment.', nextStepId: 'step-2' }
+          { id: 'opt-1-1', text: 'Configure the INKY policies to run in "Journal Mode" or "Journal Mode," which scores emails but does not inject banners or quarantine them.', isCorrect: true, feedback: 'Correct. This is the standard way to baseline an environment.', nextStepId: 'step-2' }
         ]
       },
       'step-2': {
@@ -190,7 +190,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'procedure',
         text: 'When the 2 weeks are up, how do you enable protection?',
         options: [
-          { id: 'opt-3-1', text: 'Change the policies from Monitor Only to Active (enabling banners and quarantine actions).', isCorrect: true, feedback: 'Correct. The system is now trained and ready to protect users.' }
+          { id: 'opt-3-1', text: 'Change the policies from Journal Mode to Active (enabling banners and quarantine actions).', isCorrect: true, feedback: 'Correct. The system is now trained and ready to protect users.' }
         ]
       }
     }
@@ -223,7 +223,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'investigation',
         text: 'After securing the account, what else should you check in M365?',
         options: [
-          { id: 'opt-3-1', text: 'Check for hidden inbox rules (e.g., forwarding emails to RSS feeds or external addresses) created by the attacker.', isCorrect: true, feedback: 'Correct. Attackers always leave persistence mechanisms like forwarding rules.' }
+          { id: 'opt-3-1', text: 'Check for hidden inbox rules (e.g., forwarding emails to RSS feeds or external addresses) created by the attacker.', isCorrect: true, feedback: 'Correct. Attackers may leave persistence mechanisms like forwarding rules.' }
         ]
       }
     }
@@ -237,7 +237,7 @@ export const cards: Flashcard[] = [
   { id: 'fc-inky-4', moduleId: 'inky', question: 'How does INKY integrate with Microsoft 365?', answer: 'Via API and mail flow rules (connectors). It does not require changing MX records.' },
   { id: 'fc-inky-5', moduleId: 'inky', question: 'What is INKY\'s "Phish Fence"?', answer: 'The core engine that analyzes emails for phishing, impersonation, and malware using machine learning.' },
   { id: 'fc-inky-6', moduleId: 'inky', question: 'Can users report emails via the INKY banner?', answer: 'Yes, the banner often includes a "Report This Email" link which allows users to provide feedback directly to INKY and the IT team.' },
-  { id: 'fc-inky-7', moduleId: 'inky', question: 'What is "Passive Mode" in INKY?', answer: 'A monitoring state where INKY analyzes mail but does not insert banners or block emails, used for baselining.' },
+  { id: 'fc-inky-7', moduleId: 'inky', question: 'What is "Journal Mode" in INKY?', answer: 'A monitoring state where INKY analyzes mail but does not insert banners or block emails, used for baselining.' },
   { id: 'fc-inky-8', moduleId: 'inky', question: 'Does INKY scan internal emails (user-to-user)?', answer: 'Yes, if configured to do so, which is critical for catching lateral movement from a compromised internal account.' },
   { id: 'fc-inky-9', moduleId: 'inky', question: 'How do you remediate a false positive in INKY?', answer: 'Use the INKY dashboard to search for the message and reclassify it as "Safe", which updates the machine learning model.' },
   { id: 'fc-inky-10', moduleId: 'inky', question: 'What is "Brand Impersonation"?', answer: 'When an attacker spoofs a well-known company (like Microsoft or UPS). INKY uses computer vision to detect fake logos and layouts.' },
@@ -245,7 +245,7 @@ export const cards: Flashcard[] = [
   { id: 'fc-inky-12', moduleId: 'inky', question: 'If you whitelist a sender in INKY, what happens to their emails?', answer: 'They bypass certain security checks and banners, which is why whitelisting should be done sparingly and carefully.' },
   { id: 'fc-inky-13', moduleId: 'inky', question: 'Can INKY rewrite URLs to protect users?', answer: 'Yes, similar to Safe Links, INKY can rewrite URLs so that when a user clicks, the destination is analyzed in real-time.' },
   { id: 'fc-inky-14', moduleId: 'inky', question: 'Does INKY protect against Business Email Compromise (BEC)?', answer: 'Yes, it is explicitly designed to catch text-only BEC attacks (like fake invoice requests) by analyzing sender behavior and stylometry.' },
-  { id: 'fc-inky-15', moduleId: 'inky', question: 'What happens when INKY quarantines an email?', answer: 'The email is moved to a quarantine folder (either in M365 or INKY\'s vault) and is not delivered to the user\'s inbox.' }
+  { id: 'fc-inky-15', moduleId: 'inky', question: 'What happens when INKY quarantines an email?', answer: 'The email is moved to a quarantine folder (either in M365 or the downstream quarantine) and is not delivered to the user\'s inbox.' }
 ];
 
 
@@ -281,6 +281,6 @@ export const ticketCases: RealTicketCase[] = [
     investigation: 'Checked INKY logs. The ticketing system was sending emails from "support@clientdomain.com" but originating from a third-party IP address that was not listed in the client\'s SPF record.',
     resolution: 'Instead of whitelisting the ticketing system in INKY, updated the client\'s SPF and DKIM records to properly authenticate the third-party sender. Once authenticated, INKY stopped flagging the emails as spoofed.',
     lessonsLearned: 'Fix the root cause (DNS authentication) rather than creating bypass rules in the security tool.',
-    fasterNextTime: 'Before deploying INKY in Active Mode, leave it in Passive Mode for 2 weeks to identify and fix all third-party services sending on behalf of the client.'
+    fasterNextTime: 'Before deploying INKY in Active Mode, leave it in Journal Mode for 2 weeks to identify and fix all third-party services sending on behalf of the client.'
   }
 ];

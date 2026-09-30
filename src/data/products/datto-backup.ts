@@ -28,7 +28,7 @@ export const module: AppModule = {
   keyTerminology: [
     { term: 'SIRIS', definition: 'The enterprise-grade Datto BCDR appliance line capable of local virtualization.' },
     { term: 'ALTO', definition: 'The small-business Datto BCDR appliance line (relies on cloud for virtualization).' },
-    { term: 'Inverse Chain Technology', definition: 'Datto\'s proprietary backup format where every snapshot is a fully bootable recovery point, eliminating the need for dependent backup chains.' },
+    { term: 'Inverse Chain Technology', definition: 'Datto\'s proprietary backup format where every snapshot is an independent recovery point (stored in a non-bootable state), eliminating the need for dependent backup chains.' },
     { term: 'Screenshot Verification', definition: 'An automated process where the Datto appliance spins up the backup as a VM, takes a screenshot of the login screen, and validates recoverability.' },
   ],
   relatedProducts: ['Datto SaaS Protection', 'Datto File Protection', 'Datto Azure Backup'],

@@ -55,7 +55,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'A malicious actor gained Global Admin access to a client\'s Azure tenant. They deleted critical VMs and intentionally purged the Azure Recovery Services vault (native backups). The client uses Datto Backup for Microsoft Azure. Are the backups safe?',
         options: [
-          { id: 'opt-1-1', text: 'Yes, because Datto Backup for Azure stores the backups off-tenant in the immutable Datto Cloud.', isCorrect: true, feedback: 'Correct. The separation of backup data from the production tenant is the primary value proposition here.', nextStepId: 'step-2' },
+          { id: 'opt-1-1', text: 'Yes, because Datto Backup for Azure stores the backups off-tenant in the secure Datto Cloud.', isCorrect: true, feedback: 'Correct. The separation of backup data from the production tenant is the primary value proposition here.', nextStepId: 'step-2' },
           { id: 'opt-1-2', text: 'No, if the Azure tenant is compromised, the Datto backups are automatically deleted.', isCorrect: false, feedback: 'Incorrect. The backups are isolated from Azure.', nextStepId: 'step-1' }
         ]
       },
@@ -80,7 +80,7 @@ export const scenarios: Scenario[] = [
 ];
 
 export const cards: Flashcard[] = [
-  { id: 'fc-azure-1', moduleId: 'datto-azure-backup', question: 'What is the main architectural advantage of Datto Backup for Microsoft Azure?', answer: 'It provides off-tenant, independent, and immutable backups stored in the Datto Cloud, protecting against Azure-level compromises.' },
+  { id: 'fc-azure-1', moduleId: 'datto-azure-backup', question: 'What is the main architectural advantage of Datto Backup for Microsoft Azure?', answer: 'It provides off-tenant, independent, and secure backups stored in the Datto Cloud, protecting against Azure-level compromises.' },
   { id: 'fc-azure-2', moduleId: 'datto-azure-backup', question: 'Which Azure workloads does it protect?', answer: 'Azure Virtual Machines (VMs), Azure Files, and Azure Blob Storage.' },
   { id: 'fc-azure-3', moduleId: 'datto-azure-backup', question: 'How is it billed?', answer: 'Typically on a flat-fee, predictable pricing model, unlike the variable consumption-based pricing of native Azure backup.' },
   { id: 'fc-azure-4', moduleId: 'datto-azure-backup', question: 'What happens if a whole Azure region goes down?', answer: 'Since the backups are in the Datto Cloud, you can virtualize the VMs there and maintain continuity independent of Azure.' }

@@ -197,7 +197,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'decisionMaking',
         text: 'A client wants a phishing test that looks like it comes from their local HR portal ("AcmeHR"). How do you do this in BullPhish?',
         options: [
-          { id: 'opt-1-1', text: 'Use the Template Builder to create a custom email and landing page matching their HR portal.', isCorrect: true, feedback: 'Correct. Custom templates yield higher engagement and test specific localized risks.', nextStepId: 'step-2' }
+          { id: 'opt-1-1', text: 'Use the Template Builder to create a custom email template, choose a sending profile, and select a pre-existing landing page.', isCorrect: true, feedback: 'Correct. Custom templates yield higher engagement and test specific localized risks.', nextStepId: 'step-2' }
         ]
       },
       'step-2': {
@@ -205,7 +205,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'You are designing the email. To make it convincing, you want to spoof the sender address to hr@acme.com. Is this possible?',
         options: [
-          { id: 'opt-2-1', text: 'Yes, but it requires configuring custom SMTP sending profiles and updating the client\'s SPF/DKIM records to allow BullPhish to send on their behalf.', isCorrect: true, feedback: 'Yes. Spoofing internal domains requires DNS authentication to bypass spam filters.', nextStepId: 'step-3' }
+          { id: 'opt-2-1', text: 'Yes, but it requires configuring a Custom Sending Domain, which must be validated through DNS before BullPhish can send on the client\'s behalf.', isCorrect: true, feedback: 'Yes. Spoofing internal domains requires DNS authentication to bypass spam filters.', nextStepId: 'step-3' }
         ]
       },
       'step-3': {
@@ -213,7 +213,7 @@ export const scenarios: Scenario[] = [
         competencyArea: 'knowledge',
         text: 'If you cannot modify their DNS, what is the alternative?',
         options: [
-          { id: 'opt-3-1', text: 'Use a lookalike domain provided by BullPhish (e.g., hr-acme-portal.com).', isCorrect: true, feedback: 'Correct. Lookalike domains are easier to deploy and test users\' ability to spot subtle URL differences.' }
+          { id: 'opt-3-1', text: 'Select an appropriate Global Sending Domain provided by BullPhish (e.g., hr-acme-portal.com).', isCorrect: true, feedback: 'Correct. Lookalike domains are easier to deploy and test users\' ability to spot subtle URL differences.' }
         ]
       }
     }
@@ -268,7 +268,7 @@ export const ticketCases: RealTicketCase[] = [
     symptoms: 'Client requests a custom phishing campaign impersonating a specific internal HR policy update, but the emails are landing in Spam.',
     initialThought: 'The emails are failing SPF/DKIM checks because they are spoofing the client\'s internal domain without proper DNS authorization.',
     investigation: 'The tech used the client\'s exact domain (hr@clientdomain.com) in the BullPhish sender profile. The client\'s DMARC policy is set to "reject", so the receiving server rejected the unauthenticated emails.',
-    resolution: 'Instead of modifying the client\'s complex DNS to authorize BullPhish to send as their domain, purchased a lookalike domain (e.g., clientdomain-hr.com) through BullPhish, authenticated it, and ran the campaign from that domain instead. It successfully bypassed the spam filters.',
+    resolution: 'Instead of modifying the client\'s complex DNS to authorize BullPhish to send as their domain, selected a pre-configured Global Sending Domain provided by BullPhish and ran the campaign from that domain instead. It successfully bypassed the spam filters.',
     lessonsLearned: 'Spoofing internal domains for simulations is technically complex and risky for mail flow. Lookalike domains achieve the same training goal with zero impact on production DNS.',
     fasterNextTime: 'Always default to using lookalike domains for custom campaigns unless the client specifically mandates testing their internal spoofing defenses.'
   }
