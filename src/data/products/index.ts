@@ -9,6 +9,7 @@ import * as darkwebId from './darkweb-id';
 import * as bullphishId from './bullphish-id';
 import * as kaseya365 from './kaseya-365';
 import * as inky from './inky';
+import { networkingProducts } from './networking';
 
 import type { AppModule, Scenario, Flashcard, RealTicketCase } from '../types';
 
@@ -30,6 +31,7 @@ export const allProducts: ProductExport[] = [
   bullphishId,
   kaseya365,
   inky,
+  ...networkingProducts,
 ];
 
 export const aggregatedModules: AppModule[] = allProducts.map(p => p.module);
