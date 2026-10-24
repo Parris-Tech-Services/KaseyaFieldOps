@@ -12,7 +12,7 @@ describe('Content Quality Audit', () => {
 
   it('source URLs use approved official domains', () => {
     const approvedDomains = ['datto.com', 'kaseya.com', 'help.bullphishid.kaseya.com', 'help.one.kaseya.com', 'inky.com'];
-    modules.forEach(mod => {
+    modules.filter(mod => mod.category !== 'networking').forEach(mod => {
       mod.sources?.forEach(src => {
         try {
           const url = new URL(src.url);
@@ -21,6 +21,35 @@ describe('Content Quality Audit', () => {
         } catch (e) {
           throw new Error(`Invalid URL found in module ${mod.id}: ${src.url}`);
         }
+      });
+    });
+  });
+
+  it('networking modules cite primary standards or vendor documentation', () => {
+    // Networking fundamentals aren't Kaseya products, so they cite the
+    // standards bodies and platform vendors that define them instead.
+    const approved = ['rfc-editor.org', 'iana.org', 'ieee802.org', 'learn.microsoft.com', 'wi-fi.org', 'wireguard.com', 'wireshark.org'];
+    const networking = modules.filter(mod => mod.category === 'networking');
+    expect(networking).toHaveLength(10);
+    networking.forEach(mod => {
+      mod.sources?.forEach(src => {
+        const domain = new URL(src.url).hostname.replace(/^www\./, '');
+        expect(approved, `${mod.id}: ${src.url}`).toContain(domain);
+      });
+    });
+  });
+
+  it('networking modules have lessons, and every scenario step has exactly one correct option', () => {
+    modules.filter(mod => mod.category === 'networking').forEach(mod => {
+      expect(mod.lessonSections?.length).toBeGreaterThanOrEqual(4);
+      const own = scenarios.filter(s => s.moduleId === mod.id);
+      expect(own.map(s => s.id)).toEqual([`${mod.id}-ticket`, `${mod.id}-knowledge-check`]);
+      own.forEach(s => {
+        expect(s.steps[s.firstStepId]).toBeDefined();
+        Object.values(s.steps).forEach(step => {
+          expect(step.options.filter(o => o.isCorrect), `${s.id}/${step.id}`).toHaveLength(1);
+          step.options.forEach(o => { if (o.nextStepId) expect(s.steps[o.nextStepId], `${s.id}/${o.id}`).toBeDefined(); });
+        });
       });
     });
   });

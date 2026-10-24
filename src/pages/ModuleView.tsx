@@ -2,7 +2,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { modules } from '../data/modules';
 import { scenarios } from '../data/scenarios';
 import { useAppStore } from '../store/useAppStore';
-import { ChevronLeft, Play, CheckCircle2, AlertTriangle, Lightbulb, Link2, BookMarked, Brain, HelpCircle } from 'lucide-react';
+import { ChevronLeft, Play, CheckCircle2, AlertTriangle, Lightbulb, Link2, BookMarked, Brain, HelpCircle, BookOpen } from 'lucide-react';
+import { LessonText } from '../components/LessonText';
 
 export function ModuleView() {
   const { moduleId } = useParams();
@@ -17,6 +18,8 @@ export function ModuleView() {
     : 0;
 
 
+  const isNetworking = module?.category === 'networking';
+
   if (!module) {
     return (
       <div className="text-center py-20">
@@ -30,7 +33,7 @@ export function ModuleView() {
     <div className="space-y-8 animate-fade-in pb-12">
       <Link to="/modules" className="inline-flex items-center text-sm font-medium text-textMuted hover:text-textMain mb-2">
         <ChevronLeft size={16} className="mr-1" />
-        Back to Products
+        {isNetworking ? 'Back to Modules' : 'Back to Products'}
       </Link>
       
       <header className="flex items-start gap-6 border-b border-border pb-6">
@@ -63,17 +66,32 @@ export function ModuleView() {
         {/* Main Content (Learning & Theory) */}
         <div className="lg:col-span-2 space-y-8">
           
+          {module.lessonSections && module.lessonSections.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <BookOpen className="text-cyan-600" />
+                Lesson
+              </h2>
+              {module.lessonSections.map((sec, i) => (
+                <div key={i} className="card">
+                  <h3 className="font-semibold text-textMain mb-3">{i + 1}. {sec.title}</h3>
+                  <LessonText body={sec.body} />
+                </div>
+              ))}
+            </section>
+          )}
+
           <section className="space-y-4">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <Lightbulb className="text-amber-500" />
-              Mental Model
+              {isNetworking ? 'Why It Matters' : 'Mental Model'}
             </h2>
             <div className="card prose dark:prose-invert">
-              <p className="font-medium text-textMain">What problem does this solve?</p>
+              <p className="font-medium text-textMain">{isNetworking ? 'Why MSP technicians need this' : 'What problem does this solve?'}</p>
               <p className="text-textMuted">{module.problemSolved || "This product solves a specific IT management or security challenge for MSPs. (Content pending)"}</p>
               
               <div className="mt-4 pt-4 border-t border-border">
-                <p className="font-medium text-textMain">Plain English Explanation</p>
+                <p className="font-medium text-textMain">{isNetworking ? 'In short' : 'Plain English Explanation'}</p>
                 <p className="text-textMuted">{module.mentalModel || "A simplified explanation of how this tool fits into the MSP ecosystem. (Content pending)"}</p>
               </div>
             </div>
@@ -86,7 +104,7 @@ export function ModuleView() {
             </h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="card">
-                <h3 className="font-semibold mb-2">I would use this to:</h3>
+                <h3 className="font-semibold mb-2">{isNetworking ? "After this module you'll be able to:" : 'I would use this to:'}</h3>
                 <ul className="list-disc pl-5 text-sm text-textMuted space-y-1">
                   {module.actualUseCases ? module.actualUseCases.map((use, i) => (
                     <li key={i}>{use}</li>
@@ -100,7 +118,7 @@ export function ModuleView() {
                 </ul>
               </div>
               <div className="card">
-                <h3 className="font-semibold mb-2">Common Workflows:</h3>
+                <h3 className="font-semibold mb-2">{isNetworking ? 'Commands to know:' : 'Common Workflows:'}</h3>
                 <ul className="list-disc pl-5 text-sm text-textMuted space-y-1">
                   {module.commonWorkflows ? module.commonWorkflows.map((flow, i) => (
                     <li key={i}>{flow}</li>
@@ -119,7 +137,7 @@ export function ModuleView() {
           <section className="space-y-4">
             <h2 className="text-xl font-bold flex items-center gap-2 text-red-500">
               <AlertTriangle />
-              When NOT to use this
+              {isNetworking ? 'Common Mistakes' : 'When NOT to use this'}
             </h2>
             <div className="card border-l-4 border-l-red-500 bg-red-50 dark:bg-red-950/20">
               <ul className="list-disc pl-5 text-sm text-textMuted space-y-1">
@@ -189,7 +207,7 @@ export function ModuleView() {
           <div className="card">
             <h3 className="font-bold mb-4 flex items-center gap-2">
               <Link2 size={18} className="text-purple-500" />
-              Related Products
+              {isNetworking ? 'Builds On' : 'Related Products'}
             </h3>
             <div className="flex flex-wrap gap-2">
               {module.relatedProducts ? module.relatedProducts.map((prod, i) => (
@@ -200,7 +218,7 @@ export function ModuleView() {
             </div>
           </div>
 
-          <div className="card bg-slate-50 dark:bg-slate-800 border-none">
+          {!(isNetworking && !module.commonConfusions) && <div className="card bg-slate-50 dark:bg-slate-800 border-none">
             <h3 className="font-bold mb-2 flex items-center gap-2">
               <HelpCircle size={18} className="text-orange-500" />
               Common Confusions
@@ -212,7 +230,7 @@ export function ModuleView() {
                 <li>Comparisons to similar tools pending.</li>
               )}
             </ul>
-          </div>
+          </div>}
           
           <div className="card border-primary bg-primary/5">
             <h3 className="font-bold mb-2 flex items-center gap-2">
