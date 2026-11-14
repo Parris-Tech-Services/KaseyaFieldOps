@@ -12,12 +12,18 @@ export function ModulesList() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold">Product Modules</h1>
-        <p className="text-textMuted mt-2">Master the stack. Work through orientation and field scenarios for each product.</p>
+        <h1 className="text-3xl font-bold">Modules</h1>
+        <p className="text-textMuted mt-2">Master the stack and the networking underneath it. Work through orientation and field scenarios for each module.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {modules.sort((a, b) => a.order - b.order).map(m => {
+      {[
+        { key: 'product', title: 'Kaseya & Datto Products', items: modules.filter(m => m.category !== 'networking') },
+        { key: 'networking', title: 'MSP Networking Fundamentals', items: modules.filter(m => m.category === 'networking') },
+      ].filter(g => g.items.length > 0).map(group => (
+        <section key={group.key} className="space-y-3">
+          <h2 className="text-lg font-semibold text-textMuted">{group.title}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[...group.items].sort((a, b) => a.order - b.order).map(m => {
           // @ts-ignore
           const IconComponent = Icons[m.iconName] || Icons.Box;
 
@@ -56,7 +62,9 @@ export function ModulesList() {
             </Link>
           );
         })}
-      </div>
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

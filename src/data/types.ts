@@ -15,6 +15,11 @@ export const ModuleSchema = z.object({
   iconName: z.string(),
   color: z.string(),
   order: z.number(),
+  // 'product' modules teach one Kaseya/Datto product; 'networking' modules
+  // teach the general MSP networking fundamentals those products sit on.
+  category: z.enum(['product', 'networking']).optional(),
+  // Lesson text (light markdown: paragraphs, lists, **bold**, `code`).
+  lessonSections: z.array(z.object({ title: z.string(), body: z.string() })).optional(),
   // Product learning experience fields
   problemSolved: z.string().optional(),
   mentalModel: z.string().optional(),
